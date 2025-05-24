@@ -1,0 +1,1 @@
+# gitops-external-secrets
