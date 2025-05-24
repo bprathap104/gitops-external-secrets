@@ -1,0 +1,88 @@
+# manifests/helm-chart.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets-helm
+  namespace: external-secrets-system
+spec:
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.9.11
+    helm:
+      releaseName: external-secrets
+      values: |
+        # Install CRDs
+        installCRDs: true
+        
+        # Controller configuration
+        replicaCount: 2
+        image:
+          repository: ghcr.io/external-secrets/external-secrets
+          tag: v0.9.11
+        
+        # Resource limits
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 32Mi
+        
+        # Service account
+        serviceAccount:
+          create: true
+          name: external-secrets
+          annotations:
+            # This will be populated by your IRSA setup
+            # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/ExternalSecretsRole
+        
+        # Security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+        
+        # Webhook configuration
+        webhook:
+          replicaCount: 2
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
+        
+        # Cert controller
+        certController:
+          replicaCount: 2
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
+        
+        # Monitoring
+        serviceMonitor:
+          enabled: false
+        
+        # Pod disruption budget
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: 1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,62 @@
+# manifests/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-secrets-controller
+  labels:
+    app.kubernetes.io/managed-by: argocd
+rules:
+- apiGroups:
+  - external-secrets.io
+  resources:
+  - externalsecrets
+  - externalsecrets/status
+  - externalsecrets/finalizers
+  - secretstores
+  - secretstores/status
+  - secretstores/finalizers
+  - clustersecretstores
+  - clustersecretstores/status
+  - clustersecretstores/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-secrets-controller
+  labels:
+    app.kubernetes.io/managed-by: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-secrets-controller
+subjects:
+- kind: ServiceAccount
+  name: external-secrets
+  namespace: external-secrets-system
