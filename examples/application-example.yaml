@@ -47,14 +47,14 @@ spec:
               name: api-keys-secret
               key: STRIPE_API_KEY
         # You can also mount secrets as files
-        volumeMounts:
-        - name: app-config
-          mountPath: /etc/config
-          readOnly: true
-      volumes:
-      - name: app-config
-        secret:
-          secretName: app-config-secret
+        #volumeMounts:
+        #- name: app-config
+        #  mountPath: /etc/config
+        #  readOnly: true
+      #volumes:
+      #- name: app-config
+      #  secret:
+      #    secretName: app-config-secret
 ---
 apiVersion: v1
 kind: Service
@@ -68,4 +68,4 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 80
-  type: ClusterIP
+  type: LoadBalancer

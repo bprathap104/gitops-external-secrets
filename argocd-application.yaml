@@ -9,9 +9,43 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/bprathap104/gitops-external-secrets.git
-    targetRevision: main
-    path: manifests
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.17.0
+    helm:
+      releaseName: external-secrets
+      values: |
+        installCRDs: true
+        replicaCount: 2
+        serviceAccount:
+          create: true
+          name: external-secrets
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::339712911760:role/ExternalSecretsRole
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 32Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+        webhook:
+          replicaCount: 2
+        certController:
+          replicaCount: 2
+        serviceMonitor:
+          enabled: false
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: 1
   destination:
     server: https://kubernetes.default.svc
     namespace: external-secrets-system
